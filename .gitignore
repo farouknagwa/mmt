@@ -1,0 +1,41 @@
+# --- Google OAuth (never commit) ---
+credentials.json
+token.json
+token_read.json
+token_sheet.json
+
+# --- User session inputs / outputs ---
+links.csv
+Output/
+sessions/
+csvs/
+xml/
+tex/
+files/
+
+# --- Local debug / comparison logs ---
+terminal log*.txt
+full_log.txt
+sections_validation_results.txt
+
+# --- LaTeX build artifacts ---
+*.aux
+*.log
+*.out
+*.synctex.gz
+*.fdb_latexmk
+*.fls
+
+# --- Node / tooling ---
+node_modules/
+.env
+.env.*
+.wrangler/
+
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/
