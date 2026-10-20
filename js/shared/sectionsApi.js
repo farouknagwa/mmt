@@ -1,5 +1,7 @@
 /** QMS sections / questions API — port of sections_api.py */
 
+import { qmsHeaders } from './constants.js';
+
 const BASE_URL = 'https://qms-api.nagwa.com/v1';
 const DEFAULT_TIMEOUT_MS = 150_000;
 
@@ -13,10 +15,7 @@ async function requestJson(fetchFn, method, path, { jsonBody = null, timeoutMs =
   try {
     const response = await fetchFn(`${BASE_URL}/${path.replace(/^\//, '')}`, {
       method,
-      headers: {
-        accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
+      headers: qmsHeaders({ jsonBody: jsonBody != null }),
       body: jsonBody != null ? JSON.stringify(jsonBody) : undefined,
       signal: controller.signal,
     });

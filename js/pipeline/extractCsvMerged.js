@@ -3,6 +3,7 @@
  */
 
 import {
+  qmsHeaders,
   QUESTIONS_METADATA_API_URL,
   QUESTIONS_METADATA_API_MAX_RETRIES,
   QUESTIONS_METADATA_API_RETRY_DELAY_SEC,
@@ -1215,10 +1216,7 @@ async function fetchQuestionsMetadata(questionIds, log, config = {}) {
       const fetchImpl = config.fetchFn || fetch;
       const response = await fetchImpl(url, {
         method: 'POST',
-        headers: {
-          accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
+        headers: qmsHeaders({ jsonBody: true }),
         body: JSON.stringify({ question_ids: uniqueIds }),
         signal: controller.signal,
       });

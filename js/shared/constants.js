@@ -11,7 +11,17 @@ function parseSubjectsRequiringTranslation(data) {
   );
 }
 
+export const QMS_API_KEY = 'DOETJyIJHV4xLvjO7Yoqa1O1QN2yPmY93QcY8GJs';
 export const QUESTIONS_METADATA_API_URL = 'https://qms-api.nagwa.com/v1/questions/metadata';
+
+export function qmsHeaders({ jsonBody = false } = {}) {
+  const headers = {
+    accept: 'application/json',
+    'x-api-key': QMS_API_KEY,
+  };
+  if (jsonBody) headers['Content-Type'] = 'application/json';
+  return headers;
+}
 export const QUESTIONS_METADATA_API_MAX_RETRIES = 3;
 export const QUESTIONS_METADATA_API_RETRY_DELAY_SEC = 2;
 export const QUESTIONS_METADATA_API_TIMEOUT_SEC = 30;

@@ -52,6 +52,7 @@ import {
 } from '../shared/sectionValidator.js';
 import { validateMtXmlDocument } from '../shared/mtXmlValidator.js';
 import {
+  qmsHeaders,
   SUBJECTS_REQUIRING_TRANSLATION,
   ID_URL,
   QMS_QUESTION_METADATA_URL,
@@ -248,10 +249,7 @@ async function fetchQuestionMetadata(questionIds, fetchFn, log) {
   }
   if (!uniqueIds.length) return;
 
-  const headers = {
-    accept: 'application/json',
-    'Content-Type': 'application/json',
-  };
+  const headers = qmsHeaders({ jsonBody: true });
 
   for (let start = 0; start < uniqueIds.length; start += QMS_QUESTION_METADATA_BATCH_SIZE) {
     const chunk = uniqueIds.slice(start, start + QMS_QUESTION_METADATA_BATCH_SIZE);
@@ -298,10 +296,7 @@ async function fetchQuestionTranslations(questionIds, fetchFn, log, language = Q
   }
   if (!uniqueIds.length) return;
 
-  const headers = {
-    accept: 'application/json',
-    'Content-Type': 'application/json',
-  };
+  const headers = qmsHeaders({ jsonBody: true });
   const url = `${QMS_QUESTION_TRANSLATION_URL}?translation-language=${encodeURIComponent(language)}`;
 
   for (let start = 0; start < uniqueIds.length; start += QMS_QUESTION_TRANSLATION_BATCH_SIZE) {

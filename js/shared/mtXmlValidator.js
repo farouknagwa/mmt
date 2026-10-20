@@ -14,7 +14,7 @@ import {
   loadSessionRows,
   sessionDurationFromCsvRows,
 } from './sessionCsv.js';
-import { QMS_QUESTION_METADATA_URL, SUBJECTS_REQUIRING_TRANSLATION } from './constants.js';
+import { qmsHeaders, QMS_QUESTION_METADATA_URL, SUBJECTS_REQUIRING_TRANSLATION } from './constants.js';
 import { getRawMetasessionData } from './metasessionApi.js';
 import { loadSkippingValidationsByMetasession } from './skippingValidations.js';
 
@@ -75,7 +75,7 @@ async function fetchQuestionMetadata(baseIds, fetchFn = fetch) {
       try {
         const response = await fetchFn(QMS_QUESTION_METADATA_URL, {
           method: 'POST',
-          headers: { accept: 'application/json', 'Content-Type': 'application/json' },
+          headers: qmsHeaders({ jsonBody: true }),
           body: JSON.stringify({ question_ids: chunk }),
         });
         if (response.ok) {
