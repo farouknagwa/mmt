@@ -1460,6 +1460,7 @@ export const KNOWN_PERMISSION_TAGS = new Set([
   'free_worksheet_question_count',
   'no_examples',
   'no_interactive_examples',
+  'extra_regular_sections',
 ]);
 
 const ICT_SUBJECTS_RULE40_EXEMPT = new Set([
@@ -1667,11 +1668,21 @@ export function collectAllSectionsFromXml(root) {
   return sections;
 }
 
-/** @returns {string[]} */
-export function validateTotalSectionCount(sections, xmlMetasessionType = '') {
+/**
+ * @param {Record<string, string>} sections
+ * @param {string} [xmlMetasessionType]
+ * @param {PermissionContext | null} [permissions]
+ * @returns {string[]}
+ */
+export function validateTotalSectionCount(sections, xmlMetasessionType = '', permissions = null) {
   if (csvCellStr(xmlMetasessionType).toLowerCase() !== 'regular') return [];
   const count = Object.keys(sections || {}).length;
-  if (count < 1 || count > 4) {
+  if (count < 1) {
+    return [`Session must have between 1 and 4 sections; found ${count}.`];
+  }
+  if (count > 4) {
+    const perms = permissions || new PermissionContext();
+    if (perms.hasSessionPermission('extra_regular_sections')) return [];
     return [`Session must have between 1 and 4 sections; found ${count}.`];
   }
   return [];
@@ -2170,7 +2181,7 @@ export function validateSessionContentRulesFromXml(
 ) {
   const regularSections = collectRegularSectionsFromXml(root);
   const allSections = collectAllSectionsFromXml(root);
-  const errors = validateTotalSectionCount(allSections, xmlMetasessionType);
+  const errors = validateTotalSectionCount(allSections, xmlMetasessionType, permissions);
   errors.push(...validateQuestionIdUniquenessFromXml(root));
   errors.push(...validateRegularSectionWorksheetCountsXml(regularSections, root, permissions));
   errors.push(...validateRegularSectionLiveRolesXml(regularSections, root, permissions));
@@ -2211,7 +2222,7 @@ export function validateSessionContentRules(
   const [allSections, allTypeErrors] = collectAllSectionsFromRows(rows, courseType);
   const errors = [...typeErrors, ...allTypeErrors];
   errors.push(...validateRevisionExamPresence(xmlMetasessionType, rows));
-  errors.push(...validateTotalSectionCount(allSections, xmlMetasessionType));
+  errors.push(...validateTotalSectionCount(allSections, xmlMetasessionType, permissions));
   errors.push(...validateQuestionIdUniqueness(rows));
   errors.push(...validateRegularSectionWorksheetCounts(regularSections, rows, permissions));
   errors.push(...validateRegularSectionLiveRoles(regularSections, rows, permissions));
