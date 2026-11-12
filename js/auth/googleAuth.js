@@ -150,6 +150,12 @@ export class GoogleAuth {
   }
 
   getInteractiveTokenIfValid(skewMs = 60_000) {
+    if (!this.interactiveToken) {
+      try {
+        const saved = JSON.parse(sessionStorage.getItem('mmt_token') || 'null');
+        if (saved) { this.interactiveToken = saved.t; this.interactiveExpiryMs = saved.e; }
+      } catch {}
+    }
     if (!this.interactiveToken) return null;
     if (this.interactiveExpiryMs && Date.now() >= this.interactiveExpiryMs - skewMs) {
       return null;
@@ -273,30 +279,33 @@ export class GoogleAuth {
       );
     }
 
-    await loadGisScript();
-    const scope = this.oauthScopes.join(' ');
-
-    return new Promise((resolve, reject) => {
-      try {
-        const client = window.google.accounts.oauth2.initTokenClient({
-          client_id: this.oauthClientId,
-          scope,
-          callback: (response) => {
-            if (response.error) {
-              reject(new Error(response.error_description || response.error));
-              return;
-            }
-            this.interactiveToken = response.access_token;
-            this.interactiveExpiryMs = Date.now() + (response.expires_in || 3600) * 1000;
-            log('Signed in with Google (browser).');
-            resolve(this.interactiveToken);
-          },
-        });
-        client.requestAccessToken({ prompt });
-      } catch (e) {
-        reject(e);
-      }
+    const slidesUrl = document.querySelector('#slides-url')?.value || '';
+    sessionStorage.setItem('mmt_slides_url', slidesUrl);
+    const params = new URLSearchParams({
+      client_id: this.oauthClientId,
+      redirect_uri: location.origin + location.pathname,
+      response_type: 'token',
+      scope: this.oauthScopes.join(' '),
+      include_granted_scopes: 'true',
+      prompt: prompt || 'consent',
     });
+    log('Redirecting to Google sign-in…');
+    location.assign(`https://accounts.google.com/o/oauth2/v2/auth?${params}`);
+    return new Promise(() => {});
+  }
+
+  /** Read the access token Google put in the URL hash after the redirect. */
+  consumeRedirectToken(log = console.log) {
+    const hash = new URLSearchParams(location.hash.slice(1));
+    if (hash.get('error')) {
+      log(`Google sign-in failed: ${hash.get('error')}`);
+    } else if (hash.get('access_token')) {
+      this.interactiveToken = hash.get('access_token');
+      this.interactiveExpiryMs = Date.now() + Number(hash.get('expires_in') || 3600) * 1000;
+      sessionStorage.setItem('mmt_token', JSON.stringify({ t: this.interactiveToken, e: this.interactiveExpiryMs }));
+      log('Signed in with Google (browser).');
+    }
+    if (location.hash) history.replaceState(null, '', location.pathname + location.search);
   }
 
   async getStaticDriveAccessToken(log = console.log) {

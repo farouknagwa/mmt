@@ -654,6 +654,9 @@ async function bootstrap() {
   initUi();
   await loadBundledAssets();
   await googleAuth.loadOAuthConfig(log);
+  googleAuth.consumeRedirectToken(log);
+  const savedSlidesUrl = sessionStorage.getItem('mmt_slides_url');
+  if (savedSlidesUrl && !$('#slides-url').value) $('#slides-url').value = savedSlidesUrl;
   if (googleAuth.corsProxyUrl && !getProxyUrl()) {
     $('#proxy-url').value = googleAuth.corsProxyUrl;
     localStorage.setItem('mmt_proxy_url', googleAuth.corsProxyUrl);
