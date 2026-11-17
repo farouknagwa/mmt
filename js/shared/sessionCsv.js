@@ -1841,21 +1841,6 @@ export function validateRule40_60Mcq(
   return errors;
 }
 
-export function validateRevisionExamPresence(xmlMetasessionType, rows) {
-  if (csvCellStr(xmlMetasessionType).toLowerCase() !== 'revision') return [];
-  let afterThankYou = false;
-  for (const row of rows) {
-    if (isThankYouRow(row)) {
-      afterThankYou = true;
-      continue;
-    }
-    if (!afterThankYou) continue;
-    const role = csvCellStr(row.question_role).toLowerCase().replace(/ /g, '_');
-    if (role === 'exam' && csvCellStr(row.question_id)) return [];
-  }
-  return ['exam required by session type/section_type but no exam source was found in PPTX.'];
-}
-
 /** @returns {Record<string, string>} */
 export function collectRegularSectionsFromXml(root) {
   const regular = {};
@@ -2221,7 +2206,6 @@ export function validateSessionContentRules(
   const [regularSections, typeErrors] = collectRegularSectionsFromRows(rows, courseType);
   const [allSections, allTypeErrors] = collectAllSectionsFromRows(rows, courseType);
   const errors = [...typeErrors, ...allTypeErrors];
-  errors.push(...validateRevisionExamPresence(xmlMetasessionType, rows));
   errors.push(...validateTotalSectionCount(allSections, xmlMetasessionType, permissions));
   errors.push(...validateQuestionIdUniqueness(rows));
   errors.push(...validateRegularSectionWorksheetCounts(regularSections, rows, permissions));

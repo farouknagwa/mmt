@@ -278,11 +278,6 @@ export async function validateMtXmlDocument(doc, {
     if (!exam.querySelector(':scope > question')) errors.push(`exam ${exam.getAttribute('exam_id') || '?'}: must contain at least one question.`);
   }
 
-  const examRequired = metasessionType.toLowerCase() === 'revision';
-  if (examRequired && !root.querySelector(':scope > exam')) {
-    errors.push('exam required by session type/section_type but no exam source was found in PPTX.');
-  }
-
   const occurrences = questionOccurrences(root);
   const baseIds = [];
   for (const occurrence of occurrences) {
