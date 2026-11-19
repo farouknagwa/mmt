@@ -152,7 +152,7 @@ export class GoogleAuth {
   getInteractiveTokenIfValid(skewMs = 60_000) {
     if (!this.interactiveToken) {
       try {
-        const saved = JSON.parse(sessionStorage.getItem('mmt_token') || 'null');
+        const saved = JSON.parse(localStorage.getItem('mmt_token') || 'null');
         if (saved) { this.interactiveToken = saved.t; this.interactiveExpiryMs = saved.e; }
       } catch {}
     }
@@ -287,7 +287,7 @@ export class GoogleAuth {
       response_type: 'token',
       scope: this.oauthScopes.join(' '),
       include_granted_scopes: 'true',
-      prompt: prompt || 'consent',
+      ...(prompt ? { prompt } : {}),
     });
     log('Redirecting to Google sign-in…');
     location.assign(`https://accounts.google.com/o/oauth2/v2/auth?${params}`);
@@ -302,7 +302,7 @@ export class GoogleAuth {
     } else if (hash.get('access_token')) {
       this.interactiveToken = hash.get('access_token');
       this.interactiveExpiryMs = Date.now() + Number(hash.get('expires_in') || 3600) * 1000;
-      sessionStorage.setItem('mmt_token', JSON.stringify({ t: this.interactiveToken, e: this.interactiveExpiryMs }));
+      localStorage.setItem('mmt_token', JSON.stringify({ t: this.interactiveToken, e: this.interactiveExpiryMs }));
       log('Signed in with Google (browser).');
     }
     if (location.hash) history.replaceState(null, '', location.pathname + location.search);
@@ -385,8 +385,7 @@ export class GoogleAuth {
     if (staticDrive && staticSheets) return;
 
     if (this.browserSignInAvailable) {
-      const prompt = this.interactiveToken ? '' : 'consent';
-      await this.signInInteractive(log, { prompt });
+      await this.signInInteractive(log);
       return;
     }
 

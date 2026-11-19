@@ -486,7 +486,9 @@ async function runValidateOnlyMode() {
     if (!(await vfs.exists('links.csv'))) {
       throw new Error('links.csv is required. Drop or bundle links.csv first.');
     }
+    sessionStorage.setItem('mmt_resume', 'validate');
     const authed = await verifyGoogleAuth();
+    sessionStorage.removeItem('mmt_resume');
     if (!authed) {
       throw new Error('Google sign-in is required to download presentations.');
     }
@@ -671,6 +673,19 @@ async function bootstrap() {
     await verifyGoogleAuth();
   }
   await probeApisOnLoad();
+  const resume = sessionStorage.getItem('mmt_resume');
+  sessionStorage.removeItem('mmt_resume');
+  if (resume === 'validate' && googleAuth.getInteractiveTokenIfValid()) {
+    const currentUrl = ($('#slides-url').value || '').trim();
+    if (savedSlidesUrl && currentUrl === savedSlidesUrl.trim()
+        && currentUrl.includes('docs.google.com/presentation')) {
+      await useSlidesUrl();
+      log('Resuming validation after Google sign-in…');
+      await runValidateOnlyMode();
+    } else {
+      log('Signed in. Load links.csv again, then press Validate.');
+    }
+  }
 }
 
 bootstrap();
